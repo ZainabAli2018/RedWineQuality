@@ -1,0 +1,528 @@
+Zainab Ali
+========================================================
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using in your analysis in this code
+# chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk. This
+# prevents the code from displaying in the knitted HTML output. You should set
+# echo=FALSE for all code chunks in your file, unless it makes sense for your
+# report to show the code that generated a particular plot.
+
+# The other parameters for "message" and "warning" should also be set to FALSE
+# for other code chunks once you have verified that each plot comes out as you
+# want it to. This will clean up the flow of your report.
+
+library(ggplot2)
+library(GGally)
+library(gridExtra)
+```
+
+Our dataset is red wine dataset cointains 12 variables and 1599 observations.It includes 11 variables on the chemical properties of the wine,and one outcome variable that determines the quality of each wine,with rating form 0 (very bad) to 10 (very excellent).The aim of our exploring is to answer the important question:which chemical properties influence the quality of red wines?
+
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+redw<-read.csv('wineQualityReds.csv')
+dim(redw)
+str(redw)
+summary(redw)
+```
+
+Since I have only one categorical variable(quality),let's derive two more categorical variables from existing variables.
+First new variable called sweetness_range cointains two values:high and low,derived form residual.sugar variable.
+The mean is the base point,if the value >= maen(residual.sugar) it is considered to be high,and if the value lower than maen(residual.sugar) it is considered to be low.
+Second new variable called alcohol_range same idea as the previous variable.if the value >= maen(alcohol) it is considered to be high,and if the value lower than maen(alcohol) it is considered to be low.
+
+```{r}
+# create a new categorical variable called sweetness_range
+sugar_mean <- mean(redw$residual.sugar)
+redw$sweetness_range <- ifelse(redw$residual.sugar >= sugar_mean,"high","low" )
+```
+
+```{r}
+# create a new categorical variable called alcohol_range
+alcohol_mean <- mean(redw$alcohol)
+redw$alcohol_range <- ifelse(redw$alcohol >= alcohol_mean,"high","low" )
+```
+
+# Univariate Plots Section
+
+Let's start our exploration by exploring the distribution of various variables .
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, Univariate_Plots}
+#quality distribution
+ggplot(redw, aes(x=factor(quality))) + 
+  geom_bar()
+```
+
+```{r echo=FALSE,stat1}
+table(redw$quality)
+```
+
+In our data set there is no wines with 10 even 9 rates quality ,most wines quality rate are medium rate (5 and 6),follwed by 7 rate .
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot1}
+qplot(fixed.acidity,data=redw)+
+  scale_x_continuous(breaks=seq(4,16,2))
+```
+
+```{r echo=FALSE,stat2}
+summary(redw$fixed.acidity)
+```
+
+Most of wines have fixed acidity between 7.0 and 8.0 . 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot2}
+qplot(pH,data = redw)+
+  scale_x_continuous(breaks=seq(2.0,4.010 ,.1))
+```
+
+```{r echo=FALSE,stat3}
+summary(redw$pH)
+```
+
+The pH distribution is almost a normal distribution,pH peaking around 3.3 with some outliers.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot3}
+qplot(citric.acid,data = redw)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot4}
+qplot(citric.acid,data = redw,binwidth=.01)
+```
+
+```{r echo=FALSE,stat4}
+summary(redw$citric.acid)
+```
+
+The peak is 0.0 g of citric acid,and there is an outlier equlas to 1.0 g.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot5}
+qplot(alcohol,data = redw)+
+  scale_x_continuous(breaks=seq(8,15,.5))
+```
+
+```{r echo=FALSE,stat5}
+summary(redw$alcohol)
+```
+
+Alcohol is skewed to the right, with most wines placed between around 9.0 and 9.5 .
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot6}
+qplot(density,data = redw)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot7}
+qplot(density,data = redw,binwidth=.0001)+
+scale_x_continuous(breaks=seq(8,15,1))
+```
+
+```{r echo=FALSE,stat6}
+summary(redw$density)
+```
+
+The density is almost in bell shape a normal distribution,the mean is 0.9967 . 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot8}
+qplot(residual.sugar,data = redw)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot9}
+ggplot(aes(residual.sugar),data = redw)+
+  geom_histogram()+
+  scale_x_log10()
+```
+
+```{r echo=FALSE,stat7}
+summary(redw$residual.sugar)
+```
+
+The residua sugar is a long tail distribution,so I transformed it using log10.Most of the observations are between 2.0 and 2.5 ,there are many outliers(around 15.0). 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot10}
+qplot(sulphates,data = redw)
+```
+
+```{r  echo=FALSE, message=FALSE, warning=FALSE,plot23}
+ggplot(aes(sulphates),data = redw)+
+  geom_histogram()+
+  scale_x_log10()
+```
+
+```{r echo=FALSE,stat8}
+summary(redw$sulphates)
+```
+
+It is a right skewed distribution,so I transformed it using log10 ,it is peaking around 0.7.There are outliers (around 2.0) 
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot24}
+qplot(chlorides,data = redw)
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot25}
+ggplot(aes(chlorides),data = redw)+
+  geom_histogram()+
+  scale_x_log10()
+```
+
+```{r echo=FALSE,stat14}
+summary(redw$chlorides)
+```
+
+Chlorides variable also has a long tail,I transformed using log10,it is peaking at around 0.07 .
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot26}
+qplot(volatile.acidity,data = redw,binwidth=.05)+
+  scale_x_continuous(breaks = seq(0,1,.1))
+```
+
+```{r echo=FALSE,stat15}
+summary(redw$volatile.acidity)
+```
+
+The mean of volatile.acidity around 0.5 .
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot27}
+ggplot(aes(sweetness_range),data=redw)+
+  geom_bar(width =.1)
+```
+
+```{r echo=FALSE,stat16}
+table(redw$sweetness_range)
+```
+
+As we ca see ,most of our samples are considered to as a low sweetness range
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot28}
+ggplot(aes(alcohol_range),data=redw)+
+  geom_bar(width =.1)
+```
+
+```{r echo=FALSE,stat17}
+table(redw$alcohol_range)
+```
+
+The low alcohol range has a count higher than high range alcohol.
+
+# Univariate Analysis
+
+### What is the structure of your dataset?
+The red wine data set contains 1599 samples with 12 variables ,11 of them are chemical properties of the wine .The quality variabel is rating variable its value is from 0 to 10, while 0 (very bad) and 10 (very excellent). 
+
+Other observations:
+-Most of wines quality rate is a meduim rate(5-6)
+-The median ph is about 3.3
+-Most of wines have 0 citric acid
+-Around 75% of wines have sugar less than 2
+
+### What is/are the main feature(s) of interest in your dataset?
+The main feature of this data set that I'm instersting in, is the quality and how the chemical properties affect and influence it.What makes wine get high quality?  
+
+### What other features in the dataset do you think will help support your \
+investigation into your feature(s) of interest?
+I think all other features and variables will support my investigation about wine quality.
+
+### Did you create any new variables from existing variables in the dataset?
+yes, first one is sweetness_range was derived from residual.sugar variable,and second one is alcohol_range was derived from alcohol variable. 
+
+### Of the features you investigated, were there any unusual distributions? \
+Did you perform any operations on the data to tidy, adjust, or change the form \
+of the data? If so, why did you do this?
+I get many right skewed and long tail distributions such as(resiual sugaer and chlorides) and I used bin width and log10 trnsformation to get better visualizations.
+
+# Bivariate Plots Section
+
+It is turn to discover relationships between two variables.
+
+```{r echo=FALSE,message=FALSE, warning=FALSE, Bivariate_Plots}
+#scatterplot matrices
+redw_subset<-redw[,c('quality','fixed.acidity','alcohol','residual.sugar','pH',
+                     'chlorides','volatile.acidity','citric.acid')]
+ggpairs(redw_subset,
+        lower = list(continuous = wrap("points",shape=I('.'))),
+        upper=list(combo=wrap("box",outlier.shape=I('.'))))
+```
+
+After we have a general look using the scatterplot matrices.Let's explore and discover interesting things and relationships between our variables.
+
+Is there a relationship between alcohol and quality of wine?
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot11}
+#alcohol vs. quality
+ggplot(aes(y=alcohol,x=factor(quality)),data = redw)+
+  geom_jitter(alpha=.5)
+```
+
+```{r echo=FALSE,stat9}
+by(redw$alcohol,redw$quality,summary)
+```
+
+It look likes there is a positive relationship ,as alcohol increases the quality of the wine increases.
+
+let's explore another variable ,volatile.acidity vs. quality.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot12}
+#volatile.acidity vs. quality
+ggplot(aes(y=volatile.acidity,x=factor(quality)),data = redw)+
+  geom_jitter(alpha=.5)
+```
+
+```{r echo=FALSE,stat10}
+by(redw$volatile.acidity,redw$quality,summary)
+```
+
+It seems there is a negative relationship,as volatile acidity decreases the quality increases.
+
+Now,It is the third variable turn,chlorides vs. quality.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot13}
+#chlorides vs. quality
+ggplot(aes(y=chlorides,x=factor(quality)),data = redw)+
+  geom_jitter(alpha=.5)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot29}
+ggplot(aes(y=chlorides,x=factor(quality)),data = redw)+
+  geom_jitter(alpha=.5)+
+  scale_y_log10()
+```
+
+```{r echo=FALSE,stat11}
+by(redw$chlorides,redw$quality,summary)
+```
+
+Low chlorides (almost 0.0) contributes to get high quality.There is a negative relationship,as chlorides decreases the quality increases.
+
+let's have a look how the alcohol and residual.sugar affect and influence the quality,using our new categroical variables.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot14}
+#quality vs. alcohol_range
+p1<-ggplot(aes(x=factor(quality),fill=alcohol_range),data = redw)+
+  geom_bar()
+#quality vs. sweetness_range
+p2<-ggplot(aes(x=factor(quality),fill=sweetness_range),data = redw)+
+  geom_bar()
+
+#put them together
+grid.arrange(p1,p2,ncol=1)
+```
+
+```{r echo=FALSE,stat12}
+table(redw$alcohol_range)
+by(redw$alcohol_range,redw$quality,table)
+```
+
+```{r echo=FALSE,stat13}
+table(redw$sweetness_range)
+by(redw$sweetness_range,redw$quality,table)
+```
+
+It proves what we've seen before in the scatter plot alcohol vs quality,there is a positive relationship,as alcohol increases the quality increases ,but it is opposite in residual sugar as sweetness decreases the quality increases(negative relationships).
+
+Let's now explore some relationships between some supporting variables away from our outcome variable(quality).
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot15}
+#fixed.acidity vs. pH
+ggplot(aes(fixed.acidity,pH),data = redw)+
+  geom_point(alpha=.5)
+```
+
+Scatter plot appears there is a negative relationship in some way between fixed.acidity vs. pH, as pH decreases the fixed acidity increases.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot16}
+#fixed.acidity vs. citric.acid
+ggplot(aes(fixed.acidity,citric.acid),data = redw)+
+  geom_point(alpha=.5)
+```
+
+A positive relationship between fixed acidity vs. citric.acid.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot17}
+#chlorides vs. citric.acid
+ggplot(aes(chlorides,citric.acid),data = redw)+
+  geom_point(alpha=.5)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot30}
+ggplot(aes(chlorides,citric.acid),data = redw)+
+  geom_point(alpha=.5)+
+  scale_x_log10()
+```
+
+It seems there is no a clear relationship between chlorides vs. citric acid,chlorides is constant and the citric acid is increasing.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot18}
+#chlorides vs. residual.sugar
+ggplot(aes(chlorides,residual.sugar),data = redw)+
+  geom_point(alpha=.5)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot31}
+ggplot(aes(chlorides,residual.sugar),data = redw)+
+  geom_point(alpha=.5)+
+  scale_x_log10()+
+  scale_y_log10()
+```
+
+Most of our samples have chlorides around 0.1 and residual sugar around 2.0 .
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. How did the feature(s) of interest vary with other features in \
+the dataset?
+During my investigation I discovered a positive relationship as well negative relationships.The quality has a positive relationship with alcohol.However,quality has a negative relationship with volatile acidity ,chlorides,and residual sugar. 
+
+### Did you observe any interesting relationships between the other features \
+(not the main feature(s) of interest)?
+Actually I did plots for many variables against each other,but I don't get a clear relationship,except two plots that show a relationship.There is a negative relationship between fixed acidity and pH,as well as a positive relationship between fixed acidity and citric acid .
+
+### What was the strongest relationship you found?
+Alcohol is correlated in positive way with the quality rate,as one increases the other one increases,as well as this was proved using two different plots type.
+
+# Multivariate Plots Section
+
+Let's now explore there or more variables against each other.
+
+```{r echo=FALSE,message=FALSE, warning=FALSE, Multivariate_Plots}
+#quality vs. alcohol_range facet wrap by sweetness range
+ggplot(aes(x=factor(quality),fill=alcohol_range),data=redw)+
+  geom_bar()+
+  facet_wrap(~ sweetness_range)+
+  ggtitle('facet wrap by sweetness range')
+```
+
+It seems the majority of our samples are placed in low sweetness range.
+As it appears the high quality rates (7-8) show high alcohol range with low residual sugar  . 
+
+let's discover quality vs. ph against alcohol range and sweetness range.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot19}
+#alcohol_range vs. pH facet wrap by quality
+ggplot(aes(x=alcohol_range,y=pH,color=alcohol_range),data = redw)+
+  geom_boxplot()+
+  facet_wrap(~quality,scales = 'free')+
+  ggtitle('facet wrap by quality')
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot20}
+#sweetness_range vs. pH facet wrap by quality
+ggplot(aes(sweetness_range,pH,color=sweetness_range),data = redw)+
+  geom_boxplot()+
+  facet_wrap(~quality,scales = 'free')+
+  ggtitle('facet wrap by quality')
+```
+
+The high quality rate with high alcohol range and low sweetness range has a ph around 3.2 to 3.3,while the lower quality rate has ph around 3.3. to 3.5 .
+
+let's discover quality vs. citric acid against alcohol range and sweetness range.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot21}
+#alcohol_range vs. citric.acid facet wrap by quality
+ggplot(aes(alcohol_range,citric.acid,color=alcohol_range),data = redw)+
+  geom_boxplot()+
+  facet_wrap(~quality,scales = 'free')+
+  ggtitle('facet wrap by quality')
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,plot22}
+#sweetness_range vs. citric.acid facet wrap by quality
+ggplot(aes(sweetness_range,citric.acid,color=sweetness_range),data = redw)+
+  geom_boxplot()+
+  facet_wrap(~quality,scales = 'free')+
+  ggtitle('facet wrap by quality')
+```
+
+The lowest quality rate(3) has the lowest citric acid almost 0.0,while the highest one has citric acid around 0.4
+The majority of 8 rate quality has high alcohol and low residual sugar with around 0.4 to 0.5 citric acid.
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. Were there features that strengthened each other in terms of \
+looking at your feature(s) of interest?
+High quality rate in most cases has high alcohol with low residual sugar.In addition it has ph around 3.2 to 3.3 ,as well as it has 0.4 to 0.5 g of citric acid .
+
+### Were there any interesting or surprising interactions between features?
+The quality rate(3) has citric acid almost 0.0 ,against the both categorical variables alcohol_range and sweetness_range
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the \
+strengths and limitations of your model.
+No
+
+------
+
+# Final Plots and Summary
+
+### Plot One
+```{r echo=FALSE,message=FALSE, warning=FALSE, Plot_One}
+#quality distribution
+qplot(x=factor(quality),data=redw,color=I('black'),fill=I('#F59EB9'))+
+  ggtitle("Quality Rate Distribution") +
+  xlab("Quality(1-10)")+
+  ylab("Count")
+
+```
+
+### Description One
+The most significat features in the plot are,it seems it is very hard to get a high quality rates,since the majority of our samples considered to be as a meduim rate(5-6).We notice also there is no rate with 9 or 10 !
+
+### Plot Two
+```{r echo=FALSE,message=FALSE, warning=FALSE, Plot_Two}
+#quality vs. alcohol_range
+p1<-ggplot(aes(x=factor(quality),fill=alcohol_range),data = redw)+
+  geom_bar()+
+  ggtitle('Quality Rate Distribution by Alcohol Range')+
+  xlab("Quality(1-10)")
+  
+#quality vs. sweetness_range
+p2<-ggplot(aes(x=factor(quality),fill=sweetness_range),data = redw)+
+  geom_bar()+
+  ggtitle('Quality Rate Distribution by Sweetness Range')+
+  xlab("Quality(1-10)")
+
+#arrange both plots together
+grid.arrange(p1,p2,ncol=1)
+```
+
+### Description Two
+We can notice the most significat features in the plots are,as alcohol increases the quality increases as well,and as residual sugar decreases the quality increases.
+quality vs. alcohol > positive relationship
+quality vs. residual sugar > negative relationship
+
+### Plot Three
+```{r echo=FALSE,message=FALSE, warning=FALSE, Plot_Three1}
+#alcohol_range vs. citric.acid facet by quality
+ggplot(aes(alcohol_range,citric.acid,color=alcohol_range),data = redw)+
+  geom_boxplot()+
+  facet_wrap(~quality,scales = 'free')+
+  ggtitle('Facet Wrap by Quality')+
+  ylab('Citric Acid (g / dm^3)')+
+  xlab('Alcohol Range')
+```
+
+```{r echo=FALSE,message=FALSE, warning=FALSE, Plot_Three2}
+#sweetness_range vs. citric.acid facet by quality
+ggplot(aes(sweetness_range,citric.acid,color=sweetness_range),data = redw)+
+  geom_boxplot()+
+  facet_wrap(~quality,scales = 'free')+
+  ggtitle('Facet Wrap by Quality')+
+   ylab('Citric Acid (g / dm^3)')+
+  xlab('Sweetness Range')
+```
+
+### Description Three
+
+The most significat features in the plots,are the lowest quality rate(3) that we have in our data has citric acid almost 0.0 !,and this is true against our the both categorical variables alcohol_range and sweetness_range.while the high quality rate has around 0.4 to 0.5 citric acid.
+
+------
+
+# Reflection
+The red wine dataset cointains 12 variables and 1599 observations.It includes 11 variables on the chemical properties of the wine and one categorical variable.
+During my exploriation there is no serious problems,but there is a kind of some struggling to understand the chemical terms.Since this dataset contains only one categorical variable,so to get better plots I derived two more categorical variables from existing variables.
+My big aim is to understand the relationships between quality and other variables,and what make wine get high quality rate.
+First of all,it look likes most of wines got a medium rare!,it seems it is very hard to get high quality!
+I discoverd a positive relationship between quality and alcohol,and negative relationship with volatile acidity ,chlorides,and residual sugar.
+We can use these relationships to make prediction model of wine quality.
